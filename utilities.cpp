@@ -330,6 +330,250 @@ double directionInRadians(double x1, double y1, double x2,  double y2) {
 	return glm::mod(angleRads + (2.0 * PI), (2.0 * PI)); // fits result onto interval [0, 2pi)
 }
 
+
+
+/**
+ * @fn	double map(double x, double fromLo, double fromHi, double toLow, double toHigh)
+ * @brief	Linearly map a value from one interval to another.
+ * @param 		  	x	 	x value.
+ * @param 		  	fromLo 	The low value of the x range.
+ * @param 		  	fromHi	The high value of the x range.
+ * @param 		  	toLow 	The low value of the new range.
+ * @param 		  	toHigh	The high value of the new range.
+ * @test	map(2, 0, 5, 10, 11) --> 10.4
+ */
+
+double map(double x, double fromLo, double fromHi, double toLow, double toHigh) {
+	double term1 = (x - fromLo) / (fromHi - fromLo); 
+	double term2 = (toHigh - toLow);
+	return term1 * term2 + toLow;
+}
+
+/**
+ * @fn	vector<double> quadratic(double A, double B, double C)
+ * @brief	Solves the quadratic equation, given A, B, and C.
+ * 			0, 1, or 2 roots are inserted into the vector and returned.
+ * 			The roots are placed into the vector sorted in ascending order.
+ *          vector is somewhat like Java's ArrayList. Do a little research on
+ *          it. The length of the vector will correspond to the number of roots.
+ * @param	A	A.
+ * @param	B	B.
+ * @param	C	C.
+ * @return	Vector containing the real roots.
+ * @test	quadratic(1,4,3) --> [-3,-1]
+ * @test	quadratic(1,0,0) --> [0]
+ * @test	quadratic(-4, -2, -1) --> []
+ */
+
+vector<double> quadratic(double A, double B, double C) {
+	double roots[2] = { 0,0 };
+	quadratic(A, B, C, roots);
+	vector<double> result;	// put only the roots in here
+	result.push_back(roots[1]);
+	result.push_back(roots[0]);
+	return result;
+}
+
+/**
+ * @fn	int quadratic(double A, double B, double C, double roots[2])
+ * @brief	Solves the quadratic equation, given A, B, and C.
+ * 			0, 1, or 2 roots are inserted into the array 'roots'.
+ * 			The roots are sorted in ascending order.
+ * Here is an example of how this is to be used:
+ *
+ * 	double roots[2];
+ *	int numRoots = quadratic(1, 2, -3, roots);
+ *	if (numRoots == 0) {
+ *		cout << "There are no real roots" << endl;
+ *	} else if (numRoots == 1) {
+ *		cout << "Only one root: " << roots[0] << endl;
+ *	} else if (numRoots == 2) {
+ *      if (roots[0] > roots[1])
+ *			cout << "Something is wrong. This should not happen" << endl;
+ *		else
+ *			cout << "Two roots: " << roots[0] << " and " << roots[1] << endl;
+ *	} else {
+ *		cout << "Something is wrong. This should not happen" << endl;
+ *	}
+ *
+ * @param	A	 	A.
+ * @param	B	 	B.
+ * @param	C	 	C.
+ * @param	roots	The real roots.
+ * @test	quadratic(1, 4, 3, ary) --> returns 2 and fills in ary with: [-3,-1]
+ * @test	quadratic(1 ,0, 0, ary) --> returns 1 and fills in ary with: [0]
+ * @test	quadratic(-4, -2, -1, ary) --> returns 0 and does not modify ary.
+ * @return	The number of real roots put into the array 'roots'
+*/
+
+int quadratic(double A, double B, double C, double roots[2]) {
+	/* CSE 386 - todo  */
+	int rootCnt = 0;
+	double disc = glm::pow(B, 2) - 4 * A * C;
+	if (disc < 0) {
+		return 0;
+	} if (disc == 0) {
+		roots[0] = -B / (2 * A);
+		return 1;
+	}
+	else {
+		double r1 = (-B + glm::sqrt(glm::pow(B, 2) - 4 * A * C)) / (2 * A);
+		double r2 = (-B - glm::sqrt(glm::pow(B, 2) - 4 * A * C)) / (2 * A);
+		roots[0] = glm::min(r1, r2);
+		roots[1] = glm::max(r1, r2);
+		return 2;
+	}
+	return -1; // error case
+}
+
+/**
+* @fn	dvec2 doubleIt(const dvec2 &V)
+* @brief	Computes 2*V
+* @param	V	The vector.
+* @return	2*V.
+*/
+
+dvec2 doubleIt(const dvec2& V) {
+	return 2.0 * V;
+}
+
+/**
+* @fn	dvec3 myNormalize(const dvec3 &V)
+* @brief	Computes the normalization of V, without calling glm::normalize.
+*           The input vector is not be the zero vector.
+* Programming constraint: Do NOT use glm::normalize
+* @param	V	The vector.
+* @return	Normalized vector V.
+*/
+
+dvec3 myNormalize(const dvec3& V) {
+	double norm = glm::sqrt(glm::dot(V, V));
+	return dvec3(0, 0, 0) + (V / norm);
+}
+
+/**
+* @fn	bool isOrthogonal(const dvec3 &a, const dvec3 &b)
+* @brief	Determines if two vectors are orthogonal, or nearly orthogonal. The inputs are non-zero vectors.
+Two vectors are nearly orthogonal if the cosine of the angle formed by these
+two vectors is approximatelyZero().
+* @param	a	The first vector.
+* @param	b	The second vector.
+* @return	True iff the two vector are orthogonal.
+*/
+
+bool isOrthogonal(const dvec3& a, const dvec3& b) {
+	if (approximatelyZero(glm::dot(a, b)))
+		return true;
+	return false;
+}
+
+/**
+* @fn	bool formAcuteAngle(const dvec3 &a, const dvec3 &b)
+* @brief	Determines if two vectors form an angle that is < 90 degrees. The inputs are non-zero vectors.
+* Programming constraint: Do NOT use acos, atan, or asin (you CAN use dot, cos, etc)
+* @param	a	The first vector.
+* @param	b	The second vector.
+* @return	True iff the two vectors form an acute angle.
+*/
+
+bool formAcuteAngle(const dvec3& a, const dvec3& b) {
+	double dtpd = glm::dot(a, b);
+	if (!approximatelyZero(dtpd)) {
+		if (dtpd > 0)
+			return true;
+	}
+	return false;
+}
+
+/**
+ * @fn	double cosBetween(const dvec2 &v1, const dvec2 &v2)
+ * @brief	Cosine between v1 and v2. The inputs are non-zero vectors.
+ * @param	v1	The first vector.
+ * @param	v2	The second vector.
+ * @test	cosBetween(dvec2(1.0, 0.0), dvec2(1.0, 0.0)) --> 1.0
+ * @test	cosBetween(dvec2(1.0, 0.0), dvec2(1.0, 1.0)) --> 0.707107
+ * @test	cosBetween(dvec2(-1.0, glm::sqrt(3.0)), dvec2(-1.0, 0.0)) --> 0.5
+ * @test	cosBetween(dvec2(-1.0, glm::sqrt(3.0)), dvec2(1.0, glm::sqrt(3.0))) --> 0.5
+ * @return	The cosine between v1 and v2.
+ */
+
+double cosBetween(const dvec2& v1, const dvec2& v2) {
+	double dtpd = glm::dot(v1, v2);
+	double v1Norm = glm::sqrt(glm::dot(v1, v1));
+	double v2Norm = glm::sqrt(glm::dot(v2, v2));
+	return dtpd / (v1Norm * v2Norm);
+}
+
+/**
+ * @fn	double cosBetween(const dvec3 &v1, const dvec3 &v2)
+ * @brief	Computes the cosine between v1 and v2.
+ * @param	v1	The first vector.
+ * @param	v2	The second vector.
+ * @return	A double.
+ */
+
+double cosBetween(const dvec3& v1, const dvec3& v2) {
+	double dtpd = glm::dot(v1, v2);
+	double v1Norm = glm::sqrt(glm::dot(v1, v1));
+	double v2Norm = glm::sqrt(glm::dot(v2, v2));
+	return dtpd / (v1Norm * v2Norm);
+}
+
+/**
+ * @fn	double cosBetween(const dvec4 &v1, const dvec4 &v2)
+ * @brief	Computes the cosine between v1 and v2.
+ * @param	v1	The first vector.
+ * @param	v2	The second vector.
+ * @return	A double.
+ */
+
+double cosBetween(const dvec4& v1, const dvec4& v2) {
+	return glm::dot(v1, v2) / (glm::length(v1) * glm::length(v2));;
+}
+
+/**
+ * @fn	double areaOfParallelogram(const dvec3 &v1, const dvec3 &v2)
+ * @brief	Computes the area of parallelogram, given two vectors eminating
+ * 			from the same corner of the parallelogram.
+ * @param	v1	The first vector.
+ * @param	v2	The second vector.
+ * @test	areaOfParallelogram(dvec3(1.0, 0.0, 0.0), dvec3(0.0, 1.0, 0.0)) --> 1.0
+ * @test	areaOfParallelogram(dvec3(1.0, 1.0, 1.0), dvec3(1.0, 0.0, 1.0)) --> 1.41421
+ * @return	Area of parallelogram.
+ */
+
+double areaOfParallelogram(const dvec3& v1, const dvec3& v2) {
+	return glm::length(glm::cross(v1, v2));
+}
+
+/**
+ * @fn	double areaOfTriangle(const dvec3 &pt1, const dvec3 &pt2, const dvec3 &pt3)
+ * @brief	Computes the area of triangle.
+ * Programming constraint: use areaOfParalellogram to solve this one.
+ * @param	pt1	The first point.
+ * @param	pt2	The second point.
+ * @param	pt3	The third point.
+ * @test	areaOfTriangle(dvec3(0.0, 0.0, 0.0), dvec3(1.0, 0.0, 0.0), dvec3(0.0, 1.0, 0.0)) --> 0.5
+ * @test	areaOfTriangle(dvec3(-10.0, -10.0, -10.0), dvec3(-11.0, -10.0, -10.0), dvec3(-10.0, -11.0, -10.0)) --> 0.5
+ * @return	Area of triangle.
+ */
+
+double areaOfTriangle(const dvec3& pt1, const dvec3& pt2, const dvec3& pt3) {
+	return 0.5 * areaOfParallelogram(pt2 - pt1, pt3 - pt1);
+}
+
+/**
+* @fn	dvec3 pointingVector(const dvec3 &pt1, const dvec3 &pt2)
+* @brief	Computes unit-length pointing vector.
+* @param	pt1	The first point.
+* @param	pt2	The second point.
+* @return	Unit length vector that points from pt1 toward pt2.
+*/
+
+dvec3 pointingVector(const dvec3& pt1, const dvec3& pt2) {
+	return glm::normalize(pt2 - pt1);
+}
+
 /**
 *             ......
 *             ......
